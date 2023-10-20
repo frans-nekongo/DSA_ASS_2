@@ -1,4 +1,5 @@
 import ballerina/http;
+import ballerinax/mongodb;
 
 # A service representing a network-accessible API
 # bound to port `9090`.
