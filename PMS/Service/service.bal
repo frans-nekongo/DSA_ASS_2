@@ -27,6 +27,11 @@ type UpdatedKpi record{
 
 };
 
+type DepartmentObjective record {
+    string departmentId;
+    string departmentName;
+    string departmentObjective;
+};
 
 type EmployeeDetails record {
     string id;
@@ -43,14 +48,16 @@ type EmployeeDetails record {
     boolean isAdmin;
 };
 
-type scoresDetails record {
-    string employeeTotalSore;
-    
-};
+
 
 type UpdatedemployeeDetails record {
     string username;
     string password;
+};
+
+type scoresDetails record {
+    string employeeTotalSore;
+    
 };
 
 
@@ -75,6 +82,7 @@ mongodb:Client db = check new (mongoConfig);
 configurable string ratingCollection = "Ratings";
 configurable string employeeCollection = "Employees";
 configurable string kpiCollection = "KpiS";
+configurable string departmentObjectiveCollection="Department";
 configurable string databaseName = "PMS__DB";
 
 @graphql:ServiceConfig {
@@ -86,10 +94,7 @@ configurable string databaseName = "PMS__DB";
 }
 service /PMS on new graphql:Listener(2120) {
 
-    // mutation
-    
-
-   // query
+   
     resource function get login(User user) returns LoggedemployeeDetails|error {
         stream<employeeDetails, error?> employeesDeatils = check db->find(employeeCollection, databaseName, {username: user.username, password: user.password}, {});
 
@@ -107,6 +112,17 @@ service /PMS on new graphql:Listener(2120) {
     }
 
     //HOD
+    //Create department objectives. 
+    remote function createDepartmentObjective(DepartmentObjective newDepartmentObjective) returns error|string {
+
+        map<json> doc = <map<json>>{departmentId:newDepartmentObjective.departmentId, departmentName:newDepartmentObjective.departmentName, departmentObjective:newDepartmentObjective.departmentObjective};
+        _ = check db->insert(doc, departmentObjectiveCollection, "");
+        return string `${newDepartmentObjective.departmentObjective} added successfully`;
+    }
+    
+    //Delete department objectives. 
+    //View Employees Total Scores. 
+    //Assign the Employee to a supervisor. 
 
     //SUPERVISOR
     //Approve Employee's KPIs. 
@@ -124,15 +140,15 @@ service /PMS on new graphql:Listener(2120) {
     }
 
     //Delete Employee’s KPIs. 
-    remote function deleteProduct(string id) returns error|string {
-        mongodb:Error|int deleteItem = db->delete(kpiCollection, "", {id: id}, false);
+    remote function deleteKPI(string kpiId) returns error|string {
+        mongodb:Error|int deleteItem = db->delete(kpiCollection, "", {kpiId: kpiId}, false);
         if deleteItem is mongodb:Error {
-            return error("Failed to delete items");
+            return error("Failed to delete KPI");
         } else {
             if deleteItem > 0 {
-                return string `${id} deleted successfully`;
+                return string `${kpiId} deleted successfully`;
             } else {
-                return string `product not found`;
+                return string `KPI not found`;
             }
         }
 
@@ -173,6 +189,7 @@ service /PMS on new graphql:Listener(2120) {
     
 
     //EMPLOYEE
+    //Create their KPIs 
     
     remote function createKPI(kpi newKpi) returns error|string {
 
@@ -181,12 +198,14 @@ service /PMS on new graphql:Listener(2120) {
         return string `${newKpi.kpiName} added successfully`;
     }
 
+    //Grade their Supervisor 
     remote function rateSupervisor(Rating newRating) returns error|string {
         map<json> doc = <map<json>>newRating.toJson();
         _ = check db->insert(doc, ratingCollection, "");
         return string `${newRating.supervisorID} added successfully`;
     }
 
+    //View Their Scores
     // resource function get scores(User user) returns scoresDetails|error {
     //     stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {}, {});
 
