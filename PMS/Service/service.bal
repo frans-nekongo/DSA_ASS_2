@@ -23,6 +23,7 @@ type kpi record {
 
 type UpdatedKpi record{
     string kpiName;
+    boolean status;
 
 };
 
@@ -109,22 +110,22 @@ service /PMS on new graphql:Listener(2120) {
 
     //SUPERVISOR
     //Approve Employee's KPIs. 
-     remote function changePassword(UpdatedUserDetails updatedUser) returns error|string {
+     remote function aproveKPi(UpdatedKpi updatedKpi) returns error|string {
 
-        map<json> newPasswordDoc = <map<json>>{"$set": {"password": updatedUser.password}};
+        map<json> newKpiDoc = <map<json>>{"$set": {"status": updatedKpi.status}};
 
-        int updatedCount = check db->update(newPasswordDoc, userCollection, databaseName, {username: updatedUser.username}, true, false);
+        int updatedCount = check db->update(newKpiDoc, kpiCollection, databaseName, {status: updatedKpi.status}, true, false);
         io:println("Updated Count ", updatedCount);
 
         if updatedCount > 0 {
-            return string `${updatedUser.username} password changed successfully`;
+            return string `${updatedKpi.kpiName} kpi has been approved`;
         }
-        return "Failed to updated";
+        return "Failed to approve kpi";
     }
 
     //Delete Employee’s KPIs. 
     remote function deleteProduct(string id) returns error|string {
-        mongodb:Error|int deleteItem = db->delete(productCollection, "", {id: id}, false);
+        mongodb:Error|int deleteItem = db->delete(kpiCollection, "", {id: id}, false);
         if deleteItem is mongodb:Error {
             return error("Failed to delete items");
         } else {
@@ -139,13 +140,13 @@ service /PMS on new graphql:Listener(2120) {
     //Update Employee's KPIs. 
      remote function updateKPi(UpdatedKpi updatedKpi) returns error|string {
 
-        map<json> newPasswordDoc = <map<json>>{"$set": {"password": updatedUser.password}};
+        map<json> newKpiDoc = <map<json>>{"$set": {"kpiname": updatedKpi.kpiName}};
 
-        int updatedCount = check db->update(newPasswordDoc, userCollection, databaseName, {username: updatedUser.username}, true, false);
+        int updatedCount = check db->update(newKpiDoc, kpiCollection, databaseName, {kpiName: updatedKpi.kpiName}, true, false);
         io:println("Updated Count ", updatedCount);
 
         if updatedCount > 0 {
-            return string `${updatedUser.username} password changed successfully`;
+            return string `${updatedKpi.kpiName} kpi has been changed successfully`;
         }
         return "Failed to updated";
     }
