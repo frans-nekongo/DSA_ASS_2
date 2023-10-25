@@ -24,6 +24,7 @@ type kpi record {
 type UpdatedKpi record{
     string kpiName;
     boolean status;
+    int score;
 
 };
 
@@ -53,6 +54,7 @@ type EmployeeDetails record {
 type UpdatedemployeeDetails record {
     string username;
     string password;
+    string supervisorID;
 };
 
 type scoresDetails record {
@@ -121,8 +123,50 @@ service /PMS on new graphql:Listener(2120) {
     }
     
     //Delete department objectives. 
+    remote function deleteDepartmentObjective(string departmentId) returns error|string {
+        mongodb:Error|int deleteItem = db->delete(departmentObjectiveCollection, "", {departmentId: departmentId}, false);
+        if deleteItem is mongodb:Error {
+            return error("Failed to delete KPI");
+        } else {
+            if deleteItem > 0 {
+                return string `${departmentId} deleted successfully`;
+            } else {
+                return string `KPI not found`;
+            }
+        }
+
+    }
+
     //View Employees Total Scores. 
+     resource function get totalScores(User user) returns scoresDetails|error {
+        stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {}, {});
+
+        EmployeeDetails[] users = check from var userInfo in employeeDeatils
+            select userInfo;
+        io:println("Users ", users);
+        // If the user is found return a user or return a string user not found
+        if users.length() > 0 {
+            return {username: users[0].username, isAdmin: users[0].isAdmin};
+        }
+        return {
+            username: "",
+            isAdmin: false
+        };
+    }
+
     //Assign the Employee to a supervisor. 
+    remote function assignEmployeeSupervisor(UpdatedemployeeDetails updatedEmployeeDetails) returns error|string {
+
+        map<json> newSupervisorDoc = <map<json>>{"$set": {"supervisorID": updatedEmployeeDetails.supervisorID}};
+
+        int updatedCount = check db->update(newSupervisorDoc, employeeCollection, databaseName, {supervisorID: updatedEmployeeDetails.supervisorID}, true, false);
+        io:println("Updated Count ", updatedCount);
+
+        if updatedCount > 0 {
+            return string `${updatedEmployeeDetails.supervisorID} supervisor has been assigned`;
+        }
+        return "Failed to assign supervisor";
+    }
 
     //SUPERVISOR
     //Approve Employee's KPIs. 
@@ -158,17 +202,17 @@ service /PMS on new graphql:Listener(2120) {
 
         map<json> newKpiDoc = <map<json>>{"$set": {"kpiname": updatedKpi.kpiName}};
 
-        int updatedCount = check db->update(newKpiDoc, kpiCollection, databaseName, {kpiName: updatedKpi.kpiName}, true, false);
+        int updatedCount = check db->update(newKpiDoc, kpiCollection, databaseName, {score: updatedKpi.score}, true, false);
         io:println("Updated Count ", updatedCount);
 
         if updatedCount > 0 {
-            return string `${updatedKpi.kpiName} kpi has been changed successfully`;
+            return string `${updatedKpi.score} kpi has been updated successfully`;
         }
-        return "Failed to updated";
+        return "Failed to update";
     }
 
     //View Employee Scores. (Only employees assigned to him/her).
-    resource function get scores(User user) returns scoresDetails|error {
+    resource function get employeeScores(User user) returns scoresDetails|error {
         stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {}, {});
 
         EmployeeDetails[] users = check from var userInfo in employeeDeatils
@@ -185,7 +229,18 @@ service /PMS on new graphql:Listener(2120) {
     }
 
     // Grade the employee’s KPIs
-    
+    remote function gradeKPi(UpdatedKpi updatedKpi) returns error|string {
+
+        map<json> newKpiDoc = <map<json>>{"$set": {"score": updatedKpi.score}};
+
+        int updatedCount = check db->update(newKpiDoc, kpiCollection, databaseName, {kpiName: updatedKpi.kpiName}, true, false);
+        io:println("Updated Count ", updatedCount);
+
+        if updatedCount > 0 {
+            return string `${updatedKpi.kpiName} kpi has been changed successfully`;
+        }
+        return "Failed to updated";
+    }
     
 
     //EMPLOYEE
@@ -206,20 +261,20 @@ service /PMS on new graphql:Listener(2120) {
     }
 
     //View Their Scores
-    // resource function get scores(User user) returns scoresDetails|error {
-    //     stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {}, {});
+    resource function get scores(User user) returns scoresDetails|error {
+        stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {}, {});
 
-    //     EmployeeDetails[] users = check from var userInfo in employeeDeatils
-    //         select userInfo;
-    //     io:println("Users ", users);
-    //     // If the user is found return a user or return a string user not found
-    //     if users.length() > 0 {
-    //         return {username: users[0].username, isAdmin: users[0].isAdmin};
-    //     }
-    //     return {
-    //         username: "",
-    //         isAdmin: false
-    //     };
-    // }
+        EmployeeDetails[] users = check from var userInfo in employeeDeatils
+            select userInfo;
+        io:println("Users ", users);
+        // If the user is found return a user or return a string user not found
+        if users.length() > 0 {
+            return {username: users[0].username, isAdmin: users[0].isAdmin};
+        }
+        return {
+            username: "",
+            isAdmin: false
+        };
+    }
     
 }
