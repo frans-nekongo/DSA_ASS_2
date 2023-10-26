@@ -1,3 +1,3 @@
-schema: ./performance management system/Client/graphql.config.yaml
+schema: ./home/n3on/Documents/DSA_ASS_2/performance management system/Client/scheme/schema_PMS.graphql
 documents:
-   - ./performance management system/Client/query-country.graphql
+   - ./home/n3on/Documents/DSA_ASS_2/performance management system/Client/query/query-country.graphql
