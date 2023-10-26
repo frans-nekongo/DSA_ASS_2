@@ -148,19 +148,18 @@ service /PMS on new graphql:Listener(2120) {
     }
 
     //View Employees Total Scores. 
-     resource function get totalScores(User user) returns scoresDetails|error {
+     resource function get totalScores(EmployeeDetailsSearchEmployee employeeDetailsSearchEmployee) returns scoresDetails|error {
         stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {}, {});
 
-        EmployeeDetails[] users = check from var userInfo in employeeDeatils
-            select userInfo;
-        io:println("Users ", users);
-        // If the user is found return a user or return a string user not found
-        if users.length() > 0 {
-            return {username: users[0].username, isAdmin: users[0].isAdmin};
+        EmployeeDetails[] employees = check from var employeeInfo in employeeDeatils
+            select employeeInfo;
+        io:println("EmployeeDetails ", EmployeeDetailsSearchEmployee);
+        // If the employee is found return an employeeTotalSCore or return a string employee not found
+        if employees.length() > 0 {
+            return {employeeTotalSore: employeeDetailsSearchEmployee.employeeTotalSore};
         }
         return {
-            username: "",
-            isAdmin: false
+            employeeTotalSore: ""
         };
     }
 
@@ -222,19 +221,18 @@ service /PMS on new graphql:Listener(2120) {
     }
 
     //View Employee Scores. (Only employees assigned to him/her).
-    resource function get employeeScores(User user) returns scoresDetails|error {
-        stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {}, {});
+    resource function get employeeScores(EmployeeDetailsSearchSupervisor employeeDetailsSearchSupervisor) returns scoresDetails|error {
+        stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {supervisorID:employeeDetailsSearchSupervisor.supervisorID,employeeTotalSore:employeeDetailsSearchSupervisor.employeeTotalSore,employeeId:employeeDetailsSearchSupervisor.employeeId}, {});
 
-        EmployeeDetails[] users = check from var userInfo in employeeDeatils
-            select userInfo;
-        io:println("Users ", users);
-        // If the user is found return a user or return a string user not found
-        if users.length() > 0 {
-            return {username: users[0].username, isAdmin: users[0].isAdmin};
+        EmployeeDetails[] employees = check from var employeeInfo in employeeDeatils
+            select employeeInfo;
+        io:println("EmployeeDetails ", EmployeeDetailsSearchSupervisor);
+        // If the employee is found return an employeeTotalSCore or return a string employee not found
+        if employees.length() > 0 {
+            return {employeeTotalSore: employeeDetailsSearchSupervisor.employeeTotalSore};
         }
         return {
-            username: "",
-            isAdmin: false
+            employeeTotalSore: ""
         };
     }
 
@@ -276,7 +274,7 @@ service /PMS on new graphql:Listener(2120) {
 
         EmployeeDetails[] employees = check from var employeeInfo in employeeDeatils
             select employeeInfo;
-        //io:println("EmployeeDetails ", employeeDetails);
+        io:println("EmployeeDetails ", EmployeeDetailsSearchEmployee);
         // If the employee is found return an employeeTotalSCore or return a string employee not found
         if employees.length() > 0 {
             return {employeeTotalSore: employeeDetailsSearchEmployee.employeeTotalSore};
