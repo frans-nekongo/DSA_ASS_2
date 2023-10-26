@@ -1,7 +1,7 @@
 import ballerina/graphql;
 import ballerina/io;
 import ballerinax/mongodb;
-//import ballerina/http;
+import ballerina/http;
 
 
 //ratings
@@ -115,15 +115,15 @@ configurable string kpiCollection = "KpiS";
 configurable string departmentObjectiveCollection="Department";
 configurable string databaseName = "PMS__DB";
 
-@graphql:ServiceConfig {
-    graphiql: {
-        enabled: true,
-    path: "/PMS"
-    }
-}
-//listener http:Listener httpListener = check new(9000);
+// @graphql:ServiceConfig {
+//     graphiql: {
+//         enabled: true,
+//     path: "/PMS"
+//     }
+// }
+listener http:Listener httpListener = check new(9000);
 
-service /PMS on new graphql:Listener(9000) {
+service /PMS on new graphql:Listener(httpListener) {
 
    
     resource function get loginEmployee(User user) returns LoggedUserDetailsEmployee|error {
