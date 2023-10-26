@@ -1,0 +1,3 @@
+schema: ./https://github.com/frans-nekongo/DSA_ASS_2/blob/main/performance%20management%20system/Client/schema_PMS.graphql
+documents:
+   - <File path to the GraphQL document with the GraphQL queries & mutations>
