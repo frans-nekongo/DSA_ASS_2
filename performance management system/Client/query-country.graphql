@@ -1,0 +1,105 @@
+query GetEmployeeById($id: String) {
+  getEmployeeById(id: $id) {
+    id
+    firstName
+    lastName
+    jobTitle
+    department
+    supervisorID
+    employeeTotalSore
+    // Include other fields you need
+  }
+}
+query GetAllEmployees {
+  getAllEmployees {
+    id
+    firstName
+    lastName
+    jobTitle
+    department
+    supervisorID
+    employeeTotalSore
+    // Include other fields you need
+  }
+}
+query GetEmployeeScores($employeeId: String) {
+  totalScores(employeeDetailsSearchEmployee: { employeeId: $employeeId }) {
+    employeeTotalSore
+  }
+}
+query GetSupervisorEmployeeScores($supervisorId: String) {
+  totalScores(employeeDetailsSearchSupervisor: { supervisorID: $supervisorId }) {
+    employeeTotalSore
+  }
+}
+query GetApprovedKPIs {
+  getApprovedKPIs {
+    kpiName
+    status
+    score
+  }
+}
+query GetDepartmentObjectives {
+  getDepartmentObjectives {
+    departmentId
+    departmentName
+    departmentObjective
+  }
+}
+query GetSupervisorRatings($supervisorId: Int) {
+  getRatings(supervisorID: $supervisorId) {
+    id
+    supervisorID
+    rating
+  }
+}
+query GetUserLogInStatusEmployee($employeeID: String, $password: String) {
+  loginEmployee(user: { employeeID: $employeeID, password: $password }) {
+    exists
+    logIn
+  }
+}
+query GetUserLogInStatusHOD($employeeID: String, $password: String) {
+  loginHOD(user: { employeeID: $employeeID, password: $password }) {
+    exists
+    logIn
+  }
+}
+query GetUserLogInStatusSupervisor($employeeID: String, $password: String) {
+  loginSupervisor(user: { employeeID: $employeeID, password: $password }) {
+    exists
+    logIn
+  }
+}
+mutation CreateDepartmentObjective($newDepartmentObjective: DepartmentObjectiveInput) {
+  createDepartmentObjective(newDepartmentObjective: $newDepartmentObjective)
+}
+mutation DeleteDepartmentObjective($departmentId: String) {
+  deleteDepartmentObjective(departmentId: $departmentId)
+}
+mutation AssignEmployeeSupervisor($updatedEmployeeDetails: UpdatedEmployeeDetails) {
+  assignEmployeeSupervisor(updatedEmployeeDetails: $updatedEmployeeDetails)
+}
+mutation ApproveKPI($updatedKpi: UpdatedKpi) {
+  approveKpi(updatedKpi: $updatedKpi)
+}
+mutation DeleteKPI($kpiId: String) {
+  deleteKPI(kpiId: $kpiId)
+}
+mutation UpdateKPI($updatedKpi: UpdatedKpi) {
+  updateKPI(updatedKpi: $updatedKpi)
+}
+mutation GradeKPI($updatedKpi: UpdatedKpi) {
+  gradeKPI(updatedKpi: $updatedKpi)
+}
+mutation CreateKPI($newKpi: KpiInput) {
+  createKPI(newKpi: $newKpi)
+}
+mutation RateSupervisor($newRating: RatingInput) {
+  rateSupervisor(newRating: $newRating)
+}
+query ViewEmployeeScores($employeeDetailsSearchEmployee: EmployeeDetailsSearchEmployeeInput) {
+  scores(employeeDetailsSearchEmployee: $employeeDetailsSearchEmployee) {
+    employeeTotalSore
+  }
+}
