@@ -1,3 +1,0 @@
-schema: ./home/n3on/Documents/DSA_ASS_2/performance management system/Client/scheme/schema_PMS.graphql
-documents:
-   - ./home/n3on/Documents/DSA_ASS_2/performance management system/Client/query/query-country.graphql
