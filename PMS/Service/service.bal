@@ -271,15 +271,15 @@ service /PMS on new graphql:Listener(2120) {
     }
 
     //View Their Scores
-    resource function get scores(EmployeeDetails employeeDetails) returns scoresDetails|error {
-        stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {firstname:employeeDetails.firstName,lastname:employeeDetails.lastName,jobTitle:employeeDetails.jobTitle,position:employeeDetails.position,role:employeeDetails.role,department:employeeDetails.department,supervisorID:employeeDetails.supervisorID,employeeTotalSore:employeeDetails.employeeTotalSore,password:employeeDetails.password,employeeId:employeeDetails.employeeId,isAdmin:employeeDetails.isAdmin}, {});
+    resource function get scores(EmployeeDetailsSearchEmployee employeeDetailsSearchEmployee) returns scoresDetails|error {
+        stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {employeeTotalSore:employeeDetailsSearchEmployee.employeeTotalSore,employeeId:employeeDetailsSearchEmployee.employeeId}, {});
 
         EmployeeDetails[] employees = check from var employeeInfo in employeeDeatils
             select employeeInfo;
         //io:println("EmployeeDetails ", employeeDetails);
         // If the employee is found return an employeeTotalSCore or return a string employee not found
         if employees.length() > 0 {
-            return {employeeTotalSore: employeeDetails.employeeTotalSore};
+            return {employeeTotalSore: employeeDetailsSearchEmployee.employeeTotalSore};
         }
         return {
             employeeTotalSore: ""
