@@ -1,17 +1,17 @@
 import ballerina/graphql;
 import ballerina/io;
 import ballerinax/mongodb;
+//import ballerina/http;
 
+
+//ratings
 type Rating record {
     string id;
     int supervisorID;
     int rating;
 };
 
-type User record {
-    string employeeID;
-    string password;
-};
+//kip stuff
 type kpi record {
     string kpiId;
     string kpiName;
@@ -28,12 +28,14 @@ type UpdatedKpi record{
 
 };
 
+//departments
 type DepartmentObjective record {
     string departmentId;
     string departmentName;
     string departmentObjective;
 };
 
+//employee operation stuff
 type EmployeeDetails record {
     string id;
     string firstName;
@@ -72,6 +74,20 @@ type scoresDetails record {
     
 };
 
+//user types
+type User record {
+    string employeeID;
+    string password;
+};
+
+type LoggedUserDetailsEmployee record {|
+    boolean exists;
+    boolean logIn;
+|};
+type LoggedUserDetailsHodAdmin record {|
+    boolean exists;
+    boolean logIn;
+|};
 
 
 mongodb:ConnectionConfig mongoConfig = {
@@ -93,6 +109,8 @@ mongodb:ConnectionConfig mongoConfig = {
 mongodb:Client db = check new (mongoConfig);
 configurable string ratingCollection = "Ratings";
 configurable string employeeCollection = "Employees";
+configurable string HODCollection = "HOD";
+configurable string supervisorCollection = "Supervisor";
 configurable string kpiCollection = "KpiS";
 configurable string departmentObjectiveCollection="Department";
 configurable string databaseName = "PMS__DB";
@@ -100,29 +118,60 @@ configurable string databaseName = "PMS__DB";
 @graphql:ServiceConfig {
     graphiql: {
         enabled: true,
-    // Path is optional, if not provided, it will be dafulted to `/graphiql`.
     path: "/PMS"
     }
 }
-service /PMS on new graphql:Listener(2120) {
+//listener http:Listener httpListener = check new(9000);
+
+service /PMS on new graphql:Listener(9000) {
 
    
-    resource function get login(User user) returns LoggedemployeeDetails|error {
-        stream<employeeDetails, error?> employeesDeatils = check db->find(employeeCollection, databaseName, {username: user.username, password: user.password}, {});
+    resource function get loginEmployee(User user) returns LoggedUserDetailsEmployee|error {
+        stream<EmployeeDetails, error?> employeesDeatils = check db->find(employeeCollection, databaseName, {employeeID: user.employeeID, password: user.password}, {});
 
-        employeeDetails[] employees = check from var userInfo in employeesDeatils
+        EmployeeDetails[] employees = check from var userInfo in employeesDeatils
             select userInfo;
         io:println("employees ", employees);
         // If the user is found return a user or return a string user not found
         if employees.length() > 0 {
-            return {username: employees[0].username, isAdmin: employees[0].isAdmin};
+            return {exists: true,logIn: true};
         }
         return {
-            username: "",
-            isAdmin: false
+            exists: false,
+            logIn: false
         };
     }
+     resource function get loginHOD(User user) returns LoggedUserDetailsEmployee|error {
+        stream<EmployeeDetails, error?> employeesDeatils = check db->find(HODCollection, databaseName, {employeeID: user.employeeID, password: user.password}, {});
 
+        EmployeeDetails[] employees = check from var userInfo in employeesDeatils
+            select userInfo;
+        io:println("HOD ", employees);
+        // If the user is found return a user or return a string user not found
+        if employees.length() > 0 {
+            return {exists: true,logIn: true};
+        }
+        return {
+            exists: false,
+            logIn: false
+        };
+    }
+    resource function get loginSupervisor(User user) returns LoggedUserDetailsEmployee|error {
+        stream<EmployeeDetails, error?> employeesDeatils = check db->find(supervisorCollection, databaseName, {employeeID: user.employeeID, password: user.password}, {});
+
+        EmployeeDetails[] employees = check from var userInfo in employeesDeatils
+            select userInfo;
+        io:println("Supervisor ", employees);
+        // If the user is found return a user or return a string user not found
+        if employees.length() > 0 {
+            return {exists: true,logIn: true};
+        }
+        return {
+            exists: false,
+            logIn: false
+        };
+    }
+    
     //HOD
     //Create department objectives. 
     remote function createDepartmentObjective(DepartmentObjective newDepartmentObjective) returns error|string {
