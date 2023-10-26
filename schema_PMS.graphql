@@ -1,0 +1,78 @@
+type Query {
+  loginEmployee(user: User!): LoggedUserDetailsEmployee!
+  loginHOD(user: User!): LoggedUserDetailsEmployee!
+  loginSupervisor(user: User!): LoggedUserDetailsEmployee!
+  totalScores(employeeDetailsSearchEmployee: EmployeeDetailsSearchEmployee!): scoresDetails!
+  employeeScores(employeeDetailsSearchSupervisor: EmployeeDetailsSearchSupervisor!): scoresDetails!
+  scores(employeeDetailsSearchEmployee: EmployeeDetailsSearchEmployee!): scoresDetails!
+}
+
+type LoggedUserDetailsEmployee {
+  exists: Boolean!
+  logIn: Boolean!
+}
+
+input User {
+  employeeID: String!
+  password: String!
+}
+
+type Mutation {
+  createDepartmentObjective(newDepartmentObjective: DepartmentObjective!): String!
+  deleteDepartmentObjective(departmentId: String!): String!
+  assignEmployeeSupervisor(updatedEmployeeDetails: UpdatedemployeeDetails!): String!
+  aproveKPi(updatedKpi: UpdatedKpi!): String!
+  deleteKPI(kpiId: String!): String!
+  updateKPi(updatedKpi: UpdatedKpi!): String!
+  gradeKPi(updatedKpi: UpdatedKpi!): String!
+  createKPI(newKpi: kpi!): String!
+  rateSupervisor(newRating: Rating!): String!
+}
+
+input DepartmentObjective {
+  departmentId: String!
+  departmentName: String!
+  departmentObjective: String!
+}
+
+type scoresDetails {
+  employeeTotalSore: String!
+}
+
+input EmployeeDetailsSearchEmployee {
+  employeeTotalSore: String!
+  employeeId: String!
+}
+
+input UpdatedemployeeDetails {
+  username: String!
+  password: String!
+  supervisorID: String!
+}
+
+input UpdatedKpi {
+  kpiName: String!
+  status: Boolean!
+  score: Int!
+}
+
+input EmployeeDetailsSearchSupervisor {
+  supervisorID: String!
+  employeeTotalSore: String!
+  employeeId: String!
+}
+
+input kpi {
+  kpiId: String!
+  kpiName: String!
+  idEmployees: Int!
+  score: Int!
+  status: Boolean!
+  unit: String!
+}
+
+input Rating {
+  id: String!
+  supervisorID: Int!
+  rating: Int!
+}
