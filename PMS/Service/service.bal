@@ -56,9 +56,19 @@ type UpdatedemployeeDetails record {
     string password;
     string supervisorID;
 };
+type EmployeeDetailsSearchEmployee record {
+    string employeeTotalSore;
+    string employeeId;
+};
+type EmployeeDetailsSearchSupervisor record {
+    string supervisorID;
+    string employeeTotalSore;
+    string employeeId;
+};
 
 type scoresDetails record {
     string employeeTotalSore;
+    
     
 };
 
@@ -261,20 +271,19 @@ service /PMS on new graphql:Listener(2120) {
     }
 
     //View Their Scores
-    resource function get scores(User user) returns scoresDetails|error {
-        stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {}, {});
+    resource function get scores(EmployeeDetails employeeDetails) returns scoresDetails|error {
+        stream<EmployeeDetails, error?> employeeDeatils = check db->find(employeeCollection, databaseName, {firstname:employeeDetails.firstName,lastname:employeeDetails.lastName,jobTitle:employeeDetails.jobTitle,position:employeeDetails.position,role:employeeDetails.role,department:employeeDetails.department,supervisorID:employeeDetails.supervisorID,employeeTotalSore:employeeDetails.employeeTotalSore,password:employeeDetails.password,employeeId:employeeDetails.employeeId,isAdmin:employeeDetails.isAdmin}, {});
 
-        EmployeeDetails[] users = check from var userInfo in employeeDeatils
-            select userInfo;
-        io:println("Users ", users);
-        // If the user is found return a user or return a string user not found
-        if users.length() > 0 {
-            return {username: users[0].username, isAdmin: users[0].isAdmin};
+        EmployeeDetails[] employees = check from var employeeInfo in employeeDeatils
+            select employeeInfo;
+        //io:println("EmployeeDetails ", employeeDetails);
+        // If the employee is found return an employeeTotalSCore or return a string employee not found
+        if employees.length() > 0 {
+            return {employeeTotalSore: employeeDetails.employeeTotalSore};
         }
         return {
-            username: "",
-            isAdmin: false
+            employeeTotalSore: ""
         };
     }
-    
+
 }
