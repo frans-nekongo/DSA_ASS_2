@@ -159,17 +159,43 @@ public function main() returns error? {
                     io:println("Invalid credentials");
                 } else {
                     loggedin = true;
+
+                    //
+                    displayHODOptions();
                 }
             }
             "2" => {
                 //Supervisor login
-                ProductResponse loginSupervisorResponse = check graphqlClient->execute(loginSupervisorQuery, {"user": user1});
+                string EmployeeID = io:readln("Enter employee ID: ");
+                string Password = io:readln("Enter password: ");
+
+                ProductResponse loginSupervisorResponse = check graphqlClient->execute(loginSupervisorQuery, {employeeID: EmployeeID, password: Password});
                 io:println("Login Supervisor Response: ", loginSupervisorResponse);
+                if loginSupervisorResponse is error {
+                    io:println("Invalid credentials");
+                } else {
+                    loggedin = true;
+                    
+                    //
+                    displaySupervisorOptions();
+
+                }
             }
             "3" => {
                 //Employee login
-                ProductResponse loginEmployeeResponse = check graphqlClient->execute(loginEmployeeQuery, {employeeID: "employee123", password: "password123"});
+                string EmployeeID = io:readln("Enter employee ID: ");
+                string Password = io:readln("Enter password: ");
+                ProductResponse loginEmployeeResponse = check graphqlClient->execute(loginEmployeeQuery, {employeeID: EmployeeID, password: Password});
                 io:println("Login Employee Response: ", loginEmployeeResponse);
+                if loginEmployeeResponse is error {
+                    io:println("Invalid credentials");
+                } else {
+                    loggedin = true;
+
+                    //
+                    displayEmployeeOptions();
+
+                }
             }
             _ => {
                 io:println("Invalid option");
@@ -178,6 +204,8 @@ public function main() returns error? {
     }
 
     // Perform GraphQL operations
+
+
 
     ProductResponse createDepartmentObjectiveResponse = check graphqlClient->execute(createDepartmentObjectiveMutation, {"newDepartmentObjective": departmentObjective1});
     io:println("Create Department Objective Response: ", createDepartmentObjectiveResponse);
@@ -200,12 +228,7 @@ public function main() returns error? {
     ProductResponse updateKpiResponse = check graphqlClient->execute(updateKpiMutation, {"updatedKpi": updatedKpi1});
     io:println("Update KPI Response: ", updateKpiResponse);
 
-    ProductResponse createKpiResponse = check graphqlClient->execute(createKpiMutation, {"newKpi": newKpi1});
-    io:println("Create KPI Response: ", createKpiResponse);
-
-    ProductResponse rateSupervisorResponse = check graphqlClient->execute(rateSupervisorMutation, {"newRating": newRating1});
-    io:println("Rate Supervisor Response: ", rateSupervisorResponse);
-
+    
     ProductResponse viewEmployeeScoresResponse = check graphqlClient->execute(viewEmployeeScoresQuery, {"employeeDetailsSearchEmployee": searchEmployee1});
     io:println("View Employee Scores Response: ", viewEmployeeScoresResponse);
 }
