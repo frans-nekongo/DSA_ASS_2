@@ -1,5 +1,5 @@
 import ballerina/graphql;
-import ballerina/http;
+//import ballerina/http;
 import ballerina/io;
 
 type ProductResponse record {|
@@ -124,23 +124,22 @@ public function main() returns error? {
         }
     }`;
 
+    string viewKpiQuery = string `
+    query viewKpi($kpiId: String) {
+        kpi(kpiId: $kpiId) {
+            kpiId
+            kpiName
+            idEmployees
+            score
+            status
+            unit
+        }
+    }`;
+    
+
     // startiing ui section
-    User user1 = {employeeID: "employee123", password: "password123"};
-    DepartmentObjective newDepartmentObjective1 = {
-        departmentId: "dept123",
-        departmentName: "Dept Name",
-        departmentObjective: "Objective Description"
-    };
-
-    EmployeeDetailsSearchEmployee searchEmployee1 = {employeeTotalSore: "employeeTotalSore", employeeId: "employeeId"};
-
-    UpdatedemployeeDetails updatedEmployeeDetails1 = {username: "username", password: "password", supervisorID: "supervisor123"};
-
-    UpdatedKpi updatedKpi1 = {kpiName: "kpiName", status: true, score: 100};
-
-    kpi newKpi1 = {kpiId: "kpiId", kpiName: "kpiName", idEmployees: 1, score: 100, status: true, unit: "unit"};
-
-    Rating newRating1 = {id: "id123", supervisorID: 123, rating: 5};
+  
+   
 
     while (true) {
         displayLoginOptions();
@@ -152,8 +151,8 @@ public function main() returns error? {
                 //HOD login
                 string EmployeeID = io:readln("Enter employee ID: ");
                 string Password = io:readln("Enter password: ");
-                
-                ProductResponse loginHODResponse = check graphqlClient->execute(loginHODQuery, {employeeID: EmployeeID, password: Password});
+
+                error|ProductResponse loginHODResponse = check graphqlClient->execute(loginHODQuery, {employeeID: EmployeeID, password: Password});
                 io:println("Login HOD Response: ", loginHODResponse);
                 if loginHODResponse is error {
                     io:println("Invalid credentials");
@@ -162,6 +161,48 @@ public function main() returns error? {
 
                     //
                     displayHODOptions();
+                    while (true) {
+                        string option1 = io:readln("Enter your option: ");
+
+                        match (option1) {
+                            "1" => {
+                                string departmentObjective = io:readln("Enter department objective: ");
+                                string departmentName = io:readln("Enter department name: ");
+                                string departmentId = io:readln("Enter department id: ");
+
+                                //Create department objectives.
+                                ProductResponse createDepartmentObjectiveResponse = check graphqlClient->execute(createDepartmentObjectiveMutation, {departmentId: departmentId, departmentName: departmentName, departmentObjective: departmentObjective});
+                                io:println("Create Department Objective Response: ", createDepartmentObjectiveResponse);
+
+                            }
+                            "2" => {
+                                string departmentId = io:readln("Enter department id: ");
+
+                                //Delete department objectives.
+                                ProductResponse deleteDepartmentObjectiveResponse = check graphqlClient->execute(deleteDepartmentObjectiveMutation, {departmentId: departmentId});
+                                io:println("Delete Department Objective Response: ", deleteDepartmentObjectiveResponse);
+                            }
+                            "3" => {
+                                string searchEmployee = io:readln("Enter employee id: ");
+                                //View Employee Total scores.
+
+                                ProductResponse totalScoresResponse = check graphqlClient->execute(totalScoresQuery, {searchEmployee: searchEmployee});
+                                io:println("Total Scores Response: ", totalScoresResponse);
+                            }
+                            "4" => {
+                                string employeeId = io:readln("Enter employee id: ");
+                                string supervisorId = io:readln("Enter supervisor id: ");
+
+
+                                //Assign Employee Supervisor.
+                                ProductResponse assignEmployeeSupervisorResponse = check graphqlClient->execute(assignEmployeeSupervisorMutation, {employeeId: employeeId, supervisorId: supervisorId});
+                                io:println("Assign Employee Supervisor Response: ", assignEmployeeSupervisorResponse);
+                            }
+                            _ => {
+                                io:println("Invalid option");
+                            }
+                        }
+                    }
                 }
             }
             "2" => {
@@ -169,15 +210,58 @@ public function main() returns error? {
                 string EmployeeID = io:readln("Enter employee ID: ");
                 string Password = io:readln("Enter password: ");
 
-                ProductResponse loginSupervisorResponse = check graphqlClient->execute(loginSupervisorQuery, {employeeID: EmployeeID, password: Password});
+                error|ProductResponse loginSupervisorResponse = check graphqlClient->execute(loginSupervisorQuery, {employeeID: EmployeeID, password: Password});
                 io:println("Login Supervisor Response: ", loginSupervisorResponse);
                 if loginSupervisorResponse is error {
                     io:println("Invalid credentials");
                 } else {
                     loggedin = true;
-                    
+
                     //
                     displaySupervisorOptions();
+                    while (true) {
+                        string option2 = io:readln("Enter your option: ");
+
+                        match (option2) {
+                            "1" => {
+                                string kpiId = io:readln("Enter kpi id: ");
+                                string employeeId = io:readln("Enter employee id: ");
+                                string kpiistatus = io:readln("Enter kpi status: ");
+
+                                //Approve Employee's KPIs
+                                ProductResponse approveKpiResponse = check graphqlClient->execute(approveKpiMutation, {kpiId: kpiId, employeeId: employeeId, kpiistatus: kpiistatus});
+                                io:println("Approve KPI Response: ", approveKpiResponse);
+
+                            }
+                            "2" => {
+                                string kpiId = io:readln("Enter kpi id: ");
+
+                                //Delete Employee’s KPIs
+                                ProductResponse deleteKpiResponse = check graphqlClient->execute(deleteKpiMutation, {kpiId: kpiId});
+                                io:println("Delete KPI Response: ", deleteKpiResponse);
+                            }
+                            "3" => {
+                                string kpiId = io:readln("Enter kpi id: ");
+                                string employeeId = io:readln("Enter employee id: ");
+                                string kpiname = io:readln("Enter kpi name: ");
+                                string kpiscore = io:readln("Enter kpi score: ");
+
+                                //Update Employee’s KPIs
+                                ProductResponse updateKpiResponse = check graphqlClient->execute(updateKpiMutation, {kpiId: kpiId, employeeId: employeeId, kpiname: kpiname, kpiscore: kpiscore});
+                                io:println("Update KPI Response: ", updateKpiResponse);
+                            }
+                            "4" => {
+                                string kpiId = io:readln("Enter kpi id: ");
+
+                                //View Employee’s KPIs
+                                ProductResponse viewKpiResponse = check graphqlClient->execute(viewKpiQuery, {kpiId: kpiId});
+                                io:println("View KPI Response: ", viewKpiResponse);
+                            }
+                            _ => {
+                                io:println("Invalid option");
+                            }
+                        }
+                    }
 
                 }
             }
@@ -185,7 +269,7 @@ public function main() returns error? {
                 //Employee login
                 string EmployeeID = io:readln("Enter employee ID: ");
                 string Password = io:readln("Enter password: ");
-                ProductResponse loginEmployeeResponse = check graphqlClient->execute(loginEmployeeQuery, {employeeID: EmployeeID, password: Password});
+                error|ProductResponse loginEmployeeResponse = check graphqlClient->execute(loginEmployeeQuery, {employeeID: EmployeeID, password: Password});
                 io:println("Login Employee Response: ", loginEmployeeResponse);
                 if loginEmployeeResponse is error {
                     io:println("Invalid credentials");
@@ -194,6 +278,41 @@ public function main() returns error? {
 
                     //
                     displayEmployeeOptions();
+                    while (true) {
+                        string option3 = io:readln("Enter your option: ");
+
+                        match (option3) {
+                            "1" => {
+                                string kpiID = io:readln("Enter kpi id: ");
+                                string kpiName = io:readln("Enter kpi name: ");
+                                string idEmployees = io:readln("Enter id employees: ");
+                                string score = io:readln("Enter score: ");
+                                string status = io:readln("Enter status: ");
+                                string unit = io:readln("Enter unit: ");
+                                //Create KPIs
+                                ProductResponse createKpiResponse = check graphqlClient->execute(createKpiMutation, {kpiID: kpiID,kpiName: kpiName, idEmployees: idEmployees, score: score, status: status, unit: unit});
+                                io:println("Create KPI Response: ", createKpiResponse);
+                            }
+                            "2" => {
+                                string supervisorID = io:readln("Enter supervisor id: ");
+                                string rating = io:readln("Enter rating: ");
+
+                                //Grade Supervisor
+                                ProductResponse rateSupervisorResponse = check graphqlClient->execute(rateSupervisorMutation, {supervisorID: supervisorID, rating: rating});
+                                io:println("Rate Supervisor Response: ", rateSupervisorResponse);
+                            }
+                            "3" => {
+                                string employeeId = io:readln("Enter employee id: ");
+
+                                //View scores
+                                ProductResponse viewEmployeeScoresResponse = check graphqlClient->execute(viewEmployeeScoresQuery, {employeeId: employeeId});
+                                io:println("View Employee Scores Response: ", viewEmployeeScoresResponse);
+                            }
+                            _ => {
+                                io:println("Invalid option");
+                            }
+                        }
+                    }
 
                 }
             }
@@ -203,32 +322,5 @@ public function main() returns error? {
         }
     }
 
-    // Perform GraphQL operations
 
-
-
-    ProductResponse createDepartmentObjectiveResponse = check graphqlClient->execute(createDepartmentObjectiveMutation, {"newDepartmentObjective": departmentObjective1});
-    io:println("Create Department Objective Response: ", createDepartmentObjectiveResponse);
-
-    ProductResponse deleteDepartmentObjectiveResponse = check graphqlClient->execute(deleteDepartmentObjectiveMutation, {"departmentId": "dept123"});
-    io:println("Delete Department Objective Response: ", deleteDepartmentObjectiveResponse);
-
-    ProductResponse totalScoresResponse = check graphqlClient->execute(totalScoresQuery, {"employeeDetailsSearchEmployee": searchEmployee1});
-    io:println("Total Scores Response: ", totalScoresResponse);
-
-    ProductResponse assignEmployeeSupervisorResponse = check graphqlClient->execute(assignEmployeeSupervisorMutation, {"updatedEmployeeDetails": updatedEmployeeDetails1});
-    io:println("Assign Employee Supervisor Response: ", assignEmployeeSupervisorResponse);
-
-    ProductResponse approveKpiResponse = check graphqlClient->execute(approveKpiMutation, {"updatedKpi": updatedKpi1});
-    io:println("Approve KPI Response: ", approveKpiResponse);
-
-    ProductResponse deleteKpiResponse = check graphqlClient->execute(deleteKpiMutation, {"kpiId": "kpi123"});
-    io:println("Delete KPI Response: ", deleteKpiResponse);
-
-    ProductResponse updateKpiResponse = check graphqlClient->execute(updateKpiMutation, {"updatedKpi": updatedKpi1});
-    io:println("Update KPI Response: ", updateKpiResponse);
-
-    
-    ProductResponse viewEmployeeScoresResponse = check graphqlClient->execute(viewEmployeeScoresQuery, {"employeeDetailsSearchEmployee": searchEmployee1});
-    io:println("View Employee Scores Response: ", viewEmployeeScoresResponse);
 }
